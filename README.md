@@ -1,3 +1,4 @@
+## max 2hp teloransi 5menit blokir 10menit
 ````
 cat > /usr/bin/tendang << 'EOF'
 #!/bin/bash
@@ -71,4 +72,16 @@ echo "=== CEK FINAL ==="
 grep -n "TOLERANSI\|DIBLOKIR\|-ge" /usr/bin/tendang
 cat /etc/cron.d/tendang
 service cron status | grep Active
+````
+## offkan
+````
+rm -f /etc/cron.d/tendang /usr/bin/tendang
+for U in $(ls /tmp/baned/ 2>/dev/null); do passwd -u $U 2>/dev/null; done
+rm -rf /tmp/toleransi/* /tmp/baned/*
+service cron restart
+echo "TENDANG OFF TOTAL"
+````
+## cek
+````
+cat /etc/cron.d/tendang; ls -l /usr/bin/tendang
 ````
