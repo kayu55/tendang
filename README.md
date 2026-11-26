@@ -168,7 +168,6 @@ cat > /usr/bin/tendang << 'EOF'
 #!/bin/bash
 LOG="/var/log/auth.log"
 MAX=50
-WHITELIST="najib"
 NOW=$(date +%s)
 mkdir -p /tmp/baned
 # BUKA BLOKIR SING WES 10 MENIT (600 DETIK)
@@ -207,13 +206,11 @@ for PID in $(ps aux | grep "\[priv\]" | grep -v grep | awk '{print $2}'); do
   fi
 done
 for USER in "${!ips[@]}"; do
-  # WHITELIST - NAJIB GAK KENE TENDANG
-  if [[ " $WHITELIST " == *" $USER "* ]]; then continue; fi
   [ -f /tmp/baned/$USER ] && continue
   CNT=$(echo ${ips[$USER]} | tr ' ' '\n' | sort -u | grep -v "^$" | wc -l)
   # TANPA TOLERANSI - LANGSUNG BLOKIR NEK > 50
   if [ $CNT -gt $MAX ]; then
-    echo "$(date +"%Y-%m-%d %X") - $USER - $CNT/$MAX IP - DIBLOKIR 10 MENIT (TANPA TOLERANSI)" >> /root/log-limit.txt
+    echo "$(date +"%Y-%m-%d %X") - $USER - $CNT/$MAX IP - DIBLOKIR 10 MENIT" >> /root/log-limit.txt
     for KPID in ${pids[$USER]}; do kill $KPID 2>/dev/null; done
     passwd -l "$USER" 2>/dev/null
     echo "$NOW" > /tmp/baned/$USER
@@ -221,13 +218,13 @@ for USER in "${!ips[@]}"; do
 done
 EOF
 chmod +x /usr/bin/tendang
-grep -q "tendang" /etc/cron.d/tendang 2>/dev/null || echo "*/1 * * * * root /usr/bin/tendang" > /etc/cron.d/tendang
-for U in $(ls /tmp/baned/ 2>/dev/null); do passwd -u $U 2>/dev/null; done
-rm -f /tmp/toleransi/* /tmp/baned/*
+echo "*/1 * * * * root /usr/bin/tendang" > /etc/cron.d/tendang
+chmod 644 /etc/cron.d/tendang
 service cron restart
 tendang
-echo "=== CEK FINAL ==="
-grep -n "MAX=\|WHITELIST\|DIBLOKIR\|TOLERANSI" /usr/bin/tendang
+echo "=== CEK FINAL VPS BARU ==="
+grep -n "MAX=" /usr/bin/tendang
 cat /etc/cron.d/tendang
 service cron status | grep Active
+ls -l /usr/bin/tendang
 ````
