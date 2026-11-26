@@ -73,6 +73,10 @@ grep -n "TOLERANSI\|DIBLOKIR\|-ge" /usr/bin/tendang
 cat /etc/cron.d/tendang
 service cron status | grep Active
 ````
+## cek status
+````
+cat /root/log-limit.txt; echo "---"; ls -l /usr/bin/tendang /etc/cron.d/tendang
+````
 ## offkan
 ````
 rm -f /etc/cron.d/tendang /usr/bin/tendang
