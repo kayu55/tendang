@@ -123,3 +123,43 @@ echo "TENDANG OFF TOTAL"
 ````
 cat /etc/cron.d/tendang; ls -l /usr/bin/tendang
 ````
+### buka blok
+````
+passwd -u najib
+rm -f /tmp/baned/NAMAUSER /tmp/toleransi/NAMAUSER
+echo "USER NAMAUSER WES DIBUKA MANUAL" >> /root/log-limit.txt
+````
+
+### 1. Pasang kunci ne (copy paste iki)
+# 1. Buka dulu najib nek isih ke blok
+````
+passwd -u najib
+rm -f /tmp/baned/najib /tmp/toleransi/najib
+
+# 2. Pasang whitelist neng tendang
+cp /usr/bin/tendang /usr/bin/tendang.bak
+python3 << 'PY'
+p="/usr/bin/tendang"
+t=open(p).read()
+# Tambah whitelist neng nduwur
+if "WHITELIST" not in t:
+    t=t.replace('MAX=2', 'MAX=2\nWHITELIST="najib"')
+# Tambah skip neng loop user
+if "WHITELIST" in t and "skip whitelist" not in t.lower():
+    t=t.replace('for USER in "${!ips[@]}"; do', 'for USER in "${!ips[@]}"; do\n  # WHITELIST - SKIP USER ISTIMEWA\n  if [[ " $WHITELIST " == *" $USER "* ]]; then continue; fi')
+    open(p,'w').write(t)
+    print("OK - najib wes dikunci!")
+else:
+    print("Wes enek whitelist, cek manual!")
+PY
+
+chmod +x /usr/bin/tendang
+grep -n "WHITELIST\|najib" /usr/bin/tendang
+````
+### 2. Cek hasil e
+
+Nek metu ne koyo iki = *BERHASIL!*
+WHITELIST="najib"
+# WHITELIST - SKIP USER ISTIMEWA
+if [[ " $WHITELIST " == *" $USER "* ]]; then continue; fi
+### 3. Nek pengen nambah user liyane ben gak ke blok
