@@ -77,6 +77,40 @@ service cron status | grep Active
 ````
 cat /root/log-limit.txt; echo "---"; ls -l /usr/bin/tendang /etc/cron.d/tendang
 ````
+## cek user kna baned
+````
+cat > /usr/bin/cek-blok << 'EOF'
+#!/bin/bash
+echo "================ CEK BLOK UNIVERSAL ================"
+echo ""
+echo "--- 1. TENDANG ---"
+if [ "$(ls -A /tmp/baned 2>/dev/null)" ]; then
+  ls /tmp/baned/ | while read U; do echo "❌ $U - KE BLOK TENDANG"; done
+else
+  echo "✅ Gak enek sing ke blok tendang"
+fi
+echo ""
+echo "--- 2. SSH KE KUNCI (L) ---"
+for U in $(awk -F: '$3 >= 1000 && $1 != "nobody" {print $1}' /etc/passwd); do
+  ST=$(passwd -S $U 2>/dev/null | awk '{print $2}')
+  if [ "$ST" = "L" ]; then echo "❌ SSH $U - KE KUNCI"; fi
+done
+echo "Selesai cek SSH..."
+echo ""
+echo "--- 3. XRAY EXPIRED ---"
+TODAY=$(date +%Y-%m-%d)
+grep "^### " /etc/xray/config.json 2>/dev/null | while read -r _ USER EXP; do
+  if [[ "$EXP" < "$TODAY" ]]; then echo "❌ XRAY $USER - EXPIRED $EXP"; fi
+done
+echo "Selesai cek XRAY..."
+echo ""
+echo "--- 4. LOG TENDANG ---"
+tail -10 /root/log-limit.txt 2>/dev/null || echo "Log kosong"
+echo "====================================================="
+EOF
+chmod +x /usr/bin/cek-blok
+cek-blok
+````
 ## offkan
 ````
 rm -f /etc/cron.d/tendang /usr/bin/tendang
